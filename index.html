@@ -1,0 +1,2113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeatherNow - Weather App2</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <!-- AOS CSS for animations -->
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+  <style>
+    /*styling*/
+    :root {
+      --primary-color: #7E57C2;
+      --primary-dark: #5E35B1;
+      --primary-light: #B39DDB;
+      --secondary-color: #FF7043;
+      --dark-color: #212121;
+      --light-color: #FAFAFA;
+      --success-color: #66BB6A;
+      --info-color: #29B6F6;
+      --warning-color: #FFCA28;
+      --danger-color: #EF5350;
+      --text-dark: #212121;
+      --text-light: #FAFAFA;
+      --text-muted: #757575;
+      --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      --transition: all 0.3s ease;
+    }
+
+   
+    body {
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: var(--text-dark);
+      padding-top: 72px;
+      transition: var(--transition);
+      overflow-x: hidden;
+    }
+
+    
+    body.dark-theme {
+      --primary-color: #9575CD;
+      --primary-dark: #7E57C2;
+      --primary-light: #B39DDB;
+      --text-dark: #E1E1E1;
+      --text-muted: #B9B9B9;
+      --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      background-color: #121212;
+      color: var(--text-dark);
+    }
+
+    body.dark-theme .bg-light {
+      background-color: #1E1E1E !important;
+    }
+
+    body.dark-theme .card {
+      background-color: #262626;
+      border-color: #383838;
+    }
+
+    body.dark-theme .navbar-dark {
+      background-color: #121212 !important;
+    }
+
+    body.dark-theme .text-dark {
+      color: #E1E1E1 !important;
+    }
+
+    body.dark-theme .form-control,
+    body.dark-theme .form-select {
+      background-color: #333333;
+      border-color: #444444;
+      color: #E1E1E1;
+    }
+
+    body.dark-theme .form-control:focus,
+    body.dark-theme .form-select:focus {
+      background-color: #333333;
+      color: #E1E1E1;
+    }
+
+    body.dark-theme .form-control::placeholder {
+      color: #B9B9B9;
+    }
+
+    body.dark-theme .accordion-button,
+    body.dark-theme .accordion-body {
+      background-color: #262626;
+      color: #E1E1E1;
+    }
+
+    body.dark-theme .accordion-button:focus {
+      border-color: #444444;
+    }
+
+    body.dark-theme .btn-outline-primary {
+      color: var(--primary-light);
+      border-color: var(--primary-light);
+    }
+
+    body.dark-theme .btn-outline-primary:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    body.dark-theme footer {
+      background-color: #121212 !important;
+    }
+
+    
+    a {
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    a:hover {
+      color: var(--primary-dark);
+    }
+
+    
+    .btn {
+      transition: var(--transition);
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+      background-color: var(--primary-dark);
+      border-color: var(--primary-dark);
+    }
+
+    .btn-outline-primary {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    .btn-outline-primary:hover {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    .theme-toggle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: var(--text-light);
+      background-color: transparent;
+      border: none;
+      transition: transform 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      transform: rotate(30deg);
+    }
+
+    #mainNav {
+      background-color: var(--primary-color);
+      transition: var(--transition);
+      box-shadow: var(--box-shadow);
+    }
+
+    #mainNav .navbar-brand {
+      color: var(--text-light);
+      font-weight: 700;
+    }
+
+    #mainNav .nav-link {
+      color: rgba(255, 255, 255, 0.8);
+      font-weight: 500;
+      padding: 0.75rem 1rem;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    #mainNav .nav-link:hover {
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    #mainNav .nav-link.active {
+      color: #fff;
+      position: relative;
+    }
+
+    #mainNav .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: var(--text-light);
+      border-radius: 3px 3px 0 0;
+      animation: fadeInFromBottom 0.3s ease;
+    }
+
+    .page-content {
+      display: none;
+      opacity: 0;
+      animation: fadeIn 0.4s ease-in-out forwards;
+    }
+
+    .page-content.active {
+      display: block;
+      opacity: 1;
+    }
+
+    .hero {
+      position: relative;
+      height: 600px;
+      display: flex;
+      align-items: center;
+      background-color: var(--light-color);
+      overflow: hidden;
+    }
+
+    .hero-text {
+      z-index: 1;
+    }
+
+    .hero-image {
+      position: relative;
+      z-index: 0;
+    }
+
+    .welcome-animate h1 {
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeInUp 0.8s ease forwards;
+    }
+
+    .welcome-animate p {
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeInUp 0.8s ease forwards 0.3s;
+    }
+
+    .welcome-animate .btn {
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeInUp 0.8s ease forwards 0.6s;
+    }
+
+    .feature-card {
+      transition: var(--transition);
+      border-radius: 0.75rem;
+      cursor: pointer;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-icon {
+      width: 70px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .weather-card {
+      border-radius: 1rem;
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .weather-card-small {
+      border-radius: 0.75rem;
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .weather-card-small i {
+      font-size: 1.5rem;
+    }
+
+    .weather-info-item {
+      display: flex;
+      align-items: center;
+    }
+    
+    .article-card {
+      transition: var(--transition);
+      border-radius: 0.75rem;
+      overflow: hidden;
+      height: 100%;
+    }
+
+    .article-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .article-img {
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .contact-icon {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 1.2rem;
+    }
+
+    .social-btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      transition: transform 0.3s ease;
+    }
+
+    .social-btn:hover {
+      transform: translateY(-3px);
+    }
+
+    .team-avatar {
+      width: 100px;
+      height: 100px;
+      overflow: hidden;
+      border-radius: 50%;
+      border: 3px solid var(--primary-color);
+      transition: transform 0.3s ease;
+    }
+
+    .team-avatar:hover {
+      transform: scale(1.05);
+    }
+
+    .team-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .icon-circle {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 1.5rem;
+    }
+
+    #weather-map {
+      height: 500px;
+      border-radius: 0.5rem;
+      z-index: 1;
+    }
+
+    .timeline {
+      position: relative;
+      padding: 30px 0;
+    }
+
+    .timeline:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 100%;
+      background-color: var(--primary-color);
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-bottom: 50px;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      z-index: 1;
+    }
+
+    .timeline-content {
+      position: relative;
+      width: calc(50% - 40px);
+      padding: 20px;
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: var(--box-shadow);
+      transition: transform 0.3s ease;
+    }
+
+    .timeline-content:hover {
+      transform: translateY(-5px);
+    }
+
+    .timeline-item:nth-child(odd) .timeline-content {
+      margin-left: auto;
+      margin-right: 40px;
+    }
+
+    .timeline-item:nth-child(even) .timeline-content {
+      margin-right: auto;
+      margin-left: 40px;
+    }
+
+    .timeline-item:nth-child(odd) .timeline-content:before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      right: -10px;
+      width: 20px;
+      height: 20px;
+      background-color: white;
+      transform: rotate(45deg);
+    }
+
+    .timeline-item:nth-child(even) .timeline-content:before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: -10px;
+      width: 20px;
+      height: 20px;
+      background-color: white;
+      transform: rotate(45deg);
+    }
+
+    body.dark-theme .timeline-content,
+    body.dark-theme .timeline-content:before {
+      background-color: #262626;
+    }
+
+    .faq-accordion .accordion-button:not(.collapsed) {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .faq-accordion .accordion-button:focus {
+      box-shadow: 0 0 0 0.25rem rgba(126, 87, 194, 0.25);
+    }
+
+    footer {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    footer a {
+      color: rgba(255, 255, 255, 0.8);
+      transition: var(--transition);
+    }
+
+    footer a:hover {
+      color: white;
+      text-decoration: none;
+    }
+
+    footer .social-links a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      transition: var(--transition);
+    }
+
+    footer .social-links a:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-3px);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInFromBottom {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-float {
+      animation: float 5s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-15px);
+      }
+      100% {
+        transform: translateY(0);
+      }
+    }
+
+    .animate-pulse-slow {
+      animation: pulse-slow 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-slow {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .page-transition {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--primary-color);
+      z-index: 9999;
+      transform: translateX(-100%);
+      pointer-events: none;
+    }
+
+    .page-transition.animate {
+      animation: pageTransition 0.6s ease-in-out forwards;
+    }
+
+    @keyframes pageTransition {
+      0% {
+        transform: translateX(-100%);
+      }
+      50% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    @media (max-width: 991.98px) {
+      .hero {
+        height: auto;
+        padding: 60px 0;
+      }
+      
+      .hero-text {
+        margin-bottom: 2rem;
+      }
+      
+      .timeline:before {
+        left: 40px;
+      }
+      
+      .timeline-dot {
+        left: 40px;
+      }
+      
+      .timeline-content {
+        width: calc(100% - 70px);
+        margin-left: 70px !important;
+        margin-right: 0 !important;
+      }
+      
+      .timeline-item:nth-child(odd) .timeline-content:before,
+      .timeline-item:nth-child(even) .timeline-content:before {
+        left: -10px;
+        right: auto;
+      }
+    }
+
+    @media (max-width: 767.98px) {
+      .hero {
+        padding: 40px 0;
+      }
+    }
+
+    @media (max-width: 575.98px) {
+      body {
+        padding-top: 62px;
+      }
+      
+      #mainNav {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+      }
+      
+      .hero-text h1 {
+        font-size: 2rem;
+      }
+      
+      .weather-card .display-4 {
+        font-size: 2.5rem;
+      }
+    }
+  </style>
+  <!-- /*styling*/ -->
+
+</head>
+<body>
+  <!-- Page Transition Element -->
+  <div class="page-transition"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" href="#" data-page="home">
+        <i class="fas fa-cloud-sun me-2"></i>
+        <span>WeatherNow</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link active" href="#" data-page="home"><i class="fas fa-home me-1"></i> Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-page="weather"><i class="fas fa-cloud-sun-rain me-1"></i> Weather</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-page="map"><i class="fas fa-map-marked-alt me-1"></i> Map</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-page="articles"><i class="fas fa-newspaper me-1"></i> Articles</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-page="faq"><i class="fas fa-question-circle me-1"></i> FAQ</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-page="about"><i class="fas fa-info-circle me-1"></i> About</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-page="contact"><i class="fas fa-envelope me-1"></i> Contact</a></li>
+          <li class="nav-item ms-lg-3">
+            <button class="btn btn-sm theme-toggle" id="theme-toggle">
+              <i class="fas fa-sun"></i>
+              <i class="fas fa-moon d-none"></i>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <!-- Navbar -->
+
+  <!-- Home Page -->
+  <div id="home-page" class="page-content active">
+    <!-- Hero Section -->
+    <header class="hero">
+      <div class="container h-100">
+        <div class="row h-100 align-items-center">
+          <div class="col-lg-6 hero-text welcome-animate">
+            <h1 class="display-4 fw-bold mb-4">Real-time <span class="text-primary">Weather</span> Updates</h1>
+            <p class="lead mb-5">Get accurate weather forecasts and conditions for any location around the world. Plan your day confidently with our reliable weather data.</p>
+            <div class="d-flex flex-wrap gap-2">
+              <a href="#" class="btn btn-primary btn-lg" data-page="weather">
+                <i class="fas fa-search me-2"></i> Check Weather
+              </a>
+              <a href="#" class="btn btn-outline-primary btn-lg" data-page="map">
+                <i class="fas fa-map-marker-alt me-2"></i> View Weather Map
+              </a>
+            </div>
+          </div>
+          <div class="col-lg-6 hero-image">
+            <div class="position-relative">
+              <img src="https://images.unsplash.com/photo-1580193769210-b8d1c049a7d9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80" alt="Weather landscape" class="img-fluid rounded-4 shadow-lg animate-float">
+              
+              <div class="weather-card-small position-absolute bottom-0 end-0 translate-middle-y bg-white rounded-3 shadow-lg p-3 animate-pulse-slow">
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-temperature-high text-danger fs-3 me-2"></i>
+                  <div>
+                    <h5 class="mb-0">24°C</h5>
+                    <p class="mb-0 text-muted small">Today's average</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="weather-card-small position-absolute top-0 start-0 translate-middle bg-white rounded-3 shadow-lg p-3 animate-pulse-slow" style="animation-delay: 0.5s;">
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-cloud-sun-rain text-primary fs-3 me-2"></i>
+                  <p class="mb-0">Weather Updates</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- Hero Section -->
+
+    <!-- Features Section -->
+    <section class="py-5 features">
+      <div class="container px-4">
+        <h2 class="text-center mb-5" data-aos="fade-up">Featured Weather Information</h2>
+        <div class="row g-4">
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="card feature-card h-100 border-0 shadow-sm">
+              <div class="card-body text-center p-4">
+                <div class="feature-icon bg-primary bg-opacity-10 rounded-circle p-3 mx-auto mb-4">
+                  <i class="fas fa-thermometer-half text-primary fa-2x"></i>
+                </div>
+                <h3 class="card-title h5">Temperature Trends</h3>
+                <p class="card-text">Track temperature changes and trends for any location with detailed analysis.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="card feature-card h-100 border-0 shadow-sm">
+              <div class="card-body text-center p-4">
+                <div class="feature-icon bg-primary bg-opacity-10 rounded-circle p-3 mx-auto mb-4">
+                  <i class="fas fa-cloud-rain text-primary fa-2x"></i>
+                </div>
+                <h3 class="card-title h5">Precipitation Forecast</h3>
+                <p class="card-text">Get accurate precipitation predictions with radar imagery and percentage chances.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="card feature-card h-100 border-0 shadow-sm">
+              <div class="card-body text-center p-4">
+                <div class="feature-icon bg-primary bg-opacity-10 rounded-circle p-3 mx-auto mb-4">
+                  <i class="fas fa-wind text-primary fa-2x"></i>
+                </div>
+                <h3 class="card-title h5">Wind Conditions</h3>
+                <p class="card-text">View detailed wind speeds, directions, and pressure systems affecting your area.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+    <!-- Features Section -->
+
+  <!-- Weather Page -->
+  <div id="weather-page" class="page-content">
+    <section class="py-5 mt-5">
+      <div class="container px-4">
+        <div class="row justify-content-center mb-5">
+          <div class="col-lg-8 text-center" data-aos="fade-up">
+            <h2 class="mb-4">Check Current Weather</h2>
+            <p class="lead">Enter a city name to get current weather conditions and temperature data.</p>
+          </div>
+        </div>
+        <div class="row justify-content-center">
+          <div class="col-lg-8">
+            <!-- Search Box -->
+            <div class="search-container mb-4" data-aos="fade-up">
+              <div class="input-group">
+                <input type="text" class="form-control form-control-lg" placeholder="Enter city name" id="search-input">
+                <button class="btn btn-primary location-btn" type="button" title="Use current location">
+                  <i class="fas fa-location-dot"></i>
+                </button>
+                <button class="btn btn-primary search-btn" type="button">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </div>
+            <!-- Search Box -->
+            
+            <!-- Loading Indicator -->
+            <div id="loading-indicator" class="text-center py-5 d-none">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-3">Fetching weather data...</p>
+            </div>
+            <!-- Loading Indicator -->
+            
+            <!-- Error Message -->
+            <div id="error-container" class="alert alert-danger d-none" role="alert">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <span id="error-message">Error fetching weather data. Please try again.</span>
+            </div>
+            <!-- Error Message -->
+
+            <!--  Weather Card -->
+            <div id="weather-container" class="d-none" data-aos="fade-up">
+              <div class="card weather-card shadow-lg border-0">
+                <div class="card-body text-center p-4">
+                  <h3 id="city-name" class="mb-2">London</h3>
+                  <div class="my-4">
+                    <div id="weather-icon">
+                      <i class="fas fa-cloud-sun fa-4x text-primary"></i>
+                    </div>
+                    <div class="mt-3">
+                      <h2 id="temperature" class="display-3 mb-0">21°C</h2>
+                      <p id="weather-description" class="fs-5 mb-0">Partly Cloudy</p>
+                    </div>
+                  </div>
+                  <div class="row justify-content-center mt-4">
+                    <div class="col-lg-8">
+                      <div class="row g-3">
+                        <div class="col-6">
+                          <div class="weather-info-item">
+                            <i class="fas fa-water text-primary me-2"></i>
+                            <span>Humidity: </span>
+                            <span id="humidity">65%</span>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="weather-info-item">
+                            <i class="fas fa-wind text-primary me-2"></i>
+                            <span>Wind: </span>
+                            <span id="wind-speed">5.2 m/s</span>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="weather-info-item">
+                            <i class="fas fa-compress-alt text-primary me-2"></i>
+                            <span>Pressure: </span>
+                            <span id="pressure">1012 hPa</span>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="weather-info-item">
+                            <i class="fas fa-temperature-low text-primary me-2"></i>
+                            <span>Feels like: </span>
+                            <span id="feels-like">19°C</span>
+                          </div>
+            <!--  Weather Card -->
+
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <!-- Map Page -->
+
+  <div id="map-page" class="page-content">
+    <section class="py-5 mt-5">
+      <div class="container px-4">
+        <div class="row justify-content-center mb-5">
+          <div class="col-lg-8 text-center" data-aos="fade-up">
+            <h2 class="mb-4">Interactive Weather Map</h2>
+            <p class="lead">Explore real-time weather patterns, radar data, and conditions across the globe.</p>
+          </div>
+        </div>
+
+        <!-- Map Controls -->
+        <div class="row mb-4" data-aos="fade-up">
+          <div class="col-md-6">
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="Search location" id="map-search">
+              <button class="btn btn-primary" type="button" id="search-button">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="d-flex justify-content-md-end mt-3 mt-md-0">
+              <div class="btn-group" role="group" aria-label="Weather layers">
+                <button type="button" class="btn btn-outline-primary active" data-layer="temp">Temperature</button>
+                <button type="button" class="btn btn-outline-primary" data-layer="clouds">Clouds</button>
+                <button type="button" class="btn btn-outline-primary" data-layer="precipitation">Precipitation</button>
+                <button type="button" class="btn btn-outline-primary" data-layer="wind">Wind</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Map Container -->
+        <div class="row" data-aos="fade-up">
+          <div class="col-12">
+            <div class="card shadow-lg border-0">
+              <div class="card-body p-0">
+                <div id="weather-map"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <!-- Map Page -->
+  
+  <!-- Articles Page -->
+  <div id="articles-page" class="page-content">
+    <section class="py-5 mt-5">
+      <div class="container px-4">
+        <div class="row justify-content-center mb-5">
+          <div class="col-lg-8 text-center" data-aos="fade-up">
+            <h2 class="mb-4">Weather Articles & News</h2>
+            <p class="lead">Stay informed with the latest weather news, tips, and informative articles.</p>
+          </div>
+        </div>
+        
+        <div class="row g-4" data-aos="fade-up">
+          <!-- Article 1 -->
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="card article-card shadow-sm">
+              <img src="https://images.unsplash.com/photo-1561484930-998b6a7b22e8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1074&q=80" class="card-img-top article-img" alt="Storm clouds">
+              <div class="card-body">
+                <span class="badge bg-primary mb-2">Climate</span>
+                <h5 class="card-title">Understanding Climate Change Impacts on Weather Patterns</h5>
+                <p class="card-text text-muted small">Published: April 2, 2023</p>
+                <p class="card-text">How global climate change is affecting local weather patterns and what it means for future forecasts.</p>
+                <a href="#" class="btn btn-outline-primary btn-sm">Read More</a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Article 2 -->
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="card article-card shadow-sm">
+              <img src="https://images.unsplash.com/photo-1514632595-4944383f2737?ixlib=rb-1.2.1&auto=format&fit=crop&w=1074&q=80" class="card-img-top article-img" alt="Weather instruments">
+              <div class="card-body">
+                <span class="badge bg-info mb-2">Technology</span>
+                <h5 class="card-title">New Technologies Improving Weather Forecasting Accuracy</h5>
+                <p class="card-text text-muted small">Published: March 15, 2023</p>
+                <p class="card-text">Recent advances in satellite technology and AI are revolutionizing how we predict weather conditions.</p>
+                <a href="#" class="btn btn-outline-primary btn-sm">Read More</a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Article 3 -->
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="card article-card shadow-sm">
+              <img src="https://images.unsplash.com/photo-1531147646552-1eec68116469?ixlib=rb-1.2.1&auto=format&fit=crop&w=1074&q=80" class="card-img-top article-img" alt="Preparing for storms">
+              <div class="card-body">
+                <span class="badge bg-warning text-dark mb-2">Safety</span>
+                <h5 class="card-title">Essential Storm Preparation Tips for Hurricane Season</h5>
+                <p class="card-text text-muted small">Published: February 28, 2023</p>
+                <p class="card-text">Expert advice on how to prepare your home and family for the upcoming hurricane season.</p>
+                <a href="#" class="btn btn-outline-primary btn-sm">Read More</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row mt-5">
+          <div class="col-12 text-center">
+            <a href="#" class="btn btn-primary">View All Articles</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <!-- Articles Page -->
+  
+  <!-- FAQ Page -->
+  <div id="faq-page" class="page-content">
+    <section class="py-5 mt-5">
+      <div class="container px-4">
+        <div class="row justify-content-center mb-5">
+          <div class="col-lg-8 text-center" data-aos="fade-up">
+            <h2 class="mb-4">Frequently Asked Questions</h2>
+            <p class="lead">Find answers to common questions about our weather service and features.</p>
+          </div>
+        </div>
+        
+        <div class="row justify-content-center">
+          <div class="col-lg-8" data-aos="fade-up">
+            <div class="accordion faq-accordion" id="faqAccordion">
+              <div class="accordion-item border-0 mb-3 shadow-sm">
+                <h2 class="accordion-header" id="headingOne">
+                  <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    How accurate is your weather data?
+                  </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                  <div class="accordion-body">
+                    Our weather data is sourced from multiple reliable meteorological services and satellites. We typically achieve 90-95% accuracy for short-term forecasts (1-3 days) and 80-85% for longer-term forecasts. Weather conditions are constantly changing, so we update our data every 15-30 minutes to maintain accuracy.
+                  </div>
+                </div>
+              </div>
+              
+              <div class="accordion-item border-0 mb-3 shadow-sm">
+                <h2 class="accordion-header" id="headingTwo">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                    Do you have a mobile app available?
+                  </button>
+                </h2>
+                <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                  <div class="accordion-body">
+                    Yes, we offer mobile apps for both iOS and Android platforms. Our apps include all the features available on our website, plus additional mobile-specific features like push notifications for weather alerts and widget support. You can download them from the App Store or Google Play Store.
+                  </div>
+                </div>
+              </div>
+              
+              <div class="accordion-item border-0 mb-3 shadow-sm">
+                <h2 class="accordion-header" id="headingThree">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                    How can I get weather updates for my location?
+                  </button>
+                </h2>
+                <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                  <div class="accordion-body">
+                    You can get weather updates for your location in several ways. On our website, simply use the search function to find your city or allow location access for automatic detection. You can also subscribe to our email alerts or enable browser notifications. For regular updates, consider creating an account to save your preferred locations.
+                  </div>
+                </div>
+              </div>
+              
+              <div class="accordion-item border-0 mb-3 shadow-sm">
+                <h2 class="accordion-header" id="headingFour">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                    Do you offer weather data for international locations?
+                  </button>
+                </h2>
+                <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
+                  <div class="accordion-body">
+                    Yes, WeatherNow provides global weather coverage for nearly every country and major city worldwide. Our international weather data includes temperature, precipitation, wind conditions, and other meteorological metrics. The accuracy and level of detail may vary slightly based on the availability of weather stations in different regions.
+                  </div>
+                </div>
+              </div>
+              
+              <div class="accordion-item border-0 shadow-sm">
+                <h2 class="accordion-header" id="headingFive">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                    Can I use your weather data for my website or business?
+                  </button>
+                </h2>
+                <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#faqAccordion">
+                  <div class="accordion-body">
+                    Yes, we offer a Weather API for developers and businesses that need to integrate weather data into their applications or services. We have different plans available depending on your needs, from a basic free tier to enterprise solutions with higher rate limits. Visit our API documentation page for more information or contact our sales team for custom enterprise solutions.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <!-- FAQ Page -->
+
+  <!-- About Page -->
+  <div id="about-page" class="page-content">
+    <!-- About Hero Section -->
+    <section class="py-5 mt-5 bg-light">
+      <div class="container px-4">
+        <div class="row align-items-center">
+          <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
+            <h1 class="display-5 fw-bold mb-4">About WeatherNow</h1>
+            <p class="lead mb-4">Our mission is to provide accurate, accessible weather information to help you plan your day with confidence.</p>
+            <p class="mb-4">Founded in 2025, WeatherNow has grown from a small weather tracking application to a comprehensive platform serving millions of users worldwide. We combine cutting-edge technology with user-friendly design to deliver accurate forecasts and weather insights.</p>
+            <p>Whether you're planning a trip, scheduling outdoor activities, or just want to know if you need an umbrella – WeatherNow is here for you, 24/7.</p>
+          </div>
+          <div class="col-lg-6" data-aos="fade-left">
+            <div class="about-image-container">
+              <img src="https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80" alt="Weather landscape" class="img-fluid rounded-4 shadow-lg">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Our Values Section -->
+    <section class="py-5">
+      <div class="container px-4">
+        <h2 class="text-center mb-5" data-aos="fade-up">Our Values</h2>
+        <div class="row g-4">
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="card h-100 border-0 shadow-sm">
+              <div class="card-body text-center p-4">
+                <div class="icon-circle bg-primary bg-opacity-10 mx-auto mb-4">
+                  <i class="fas fa-check-circle text-primary"></i>
+                </div>
+                <h3 class="card-title h5">Accuracy</h3>
+                <p class="card-text">We prioritize the accuracy of our weather data, utilizing advanced meteorological models and continuous validation.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="card h-100 border-0 shadow-sm">
+              <div class="card-body text-center p-4">
+                <div class="icon-circle bg-primary bg-opacity-10 mx-auto mb-4">
+                  <i class="fas fa-users text-primary"></i>
+                </div>
+                <h3 class="card-title h5">Accessibility</h3>
+                <p class="card-text">Weather information should be accessible to everyone. We design our platform to be intuitive and easy to use for all ages.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="card h-100 border-0 shadow-sm">
+              <div class="card-body text-center p-4">
+                <div class="icon-circle bg-primary bg-opacity-10 mx-auto mb-4">
+                  <i class="fas fa-rocket text-primary"></i>
+                </div>
+                <h3 class="card-title h5">Innovation</h3>
+                <p class="card-text">We continuously improve our technology and features to provide the best weather forecasting experience possible.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  <!-- About Page -->
+
+    <!-- How It Works Section -->
+    <section class="py-5 bg-light">
+      <div class="container px-4">
+        <h2 class="text-center mb-5" data-aos="fade-up">How WeatherNow Works</h2>
+        <div class="row">
+          <div class="col-lg-10 mx-auto">
+            <div class="timeline">
+              <div class="timeline-item" data-aos="fade-right">
+                <div class="timeline-dot bg-primary">
+                  <i class="fas fa-satellite"></i>
+                </div>
+                <div class="timeline-content">
+                  <h3 class="h5">Data Collection</h3>
+                  <p>We gather weather data from multiple trusted sources including satellites, weather stations, and radar systems around the world.</p>
+                </div>
+              </div>
+              <div class="timeline-item" data-aos="fade-left">
+                <div class="timeline-dot bg-primary">
+                  <i class="fas fa-cogs"></i>
+                </div>
+                <div class="timeline-content">
+                  <h3 class="h5">Processing & Analysis</h3>
+                  <p>Our advanced algorithms process and analyze this data, combining different sources to increase accuracy and reliability.</p>
+                </div>
+              </div>
+              <div class="timeline-item" data-aos="fade-right">
+                <div class="timeline-dot bg-primary">
+                  <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="timeline-content">
+                  <h3 class="h5">Forecast Generation</h3>
+                  <p>Based on the analyzed data, our system generates detailed weather forecasts for locations worldwide.</p>
+                </div>
+              </div>
+              <div class="timeline-item" data-aos="fade-left">
+                <div class="timeline-dot bg-primary">
+                  <i class="fas fa-mobile-alt"></i>
+                </div>
+                <div class="timeline-content">
+                  <h3 class="h5">User-Friendly Presentation</h3>
+                  <p>The forecasts are then presented in an intuitive, easy-to-understand format on our website and mobile apps.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- How It Works Section -->
+
+    <!-- Team Section -->
+    <section class="py-5">
+      <div class="container px-4">
+        <h2 class="text-center mb-5" data-aos="fade-up">Our Team</h2>
+        <div class="row g-4">
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="card h-100 border-0 shadow-sm">
+              <div class="card-body text-center p-4">
+                <div class="team-avatar mx-auto mb-4">
+                  <img src="https://randomuser.me/api/portraits/men/41.jpg" alt="CEO" class="rounded-circle">
+                </div>
+                <h3 class="card-title h5">John </h3>
+                <p class="text-primary mb-2">CEO & Founder</p>
+                <p class="card-text">John has over 15 years of experience in meteorology and software development, focusing on making weather information accessible.</p>
+                <div class="social-links mt-3">
+                  <a href="#" class="me-2"><i class="fab fa-twitter"></i></a>
+                  <a href="#" class="me-2"><i class="fab fa-linkedin-in"></i></a>
+                  <a href="#"><i class="far fa-envelope"></i></a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="card h-100 border-0 shadow-sm">
+              <div class="card-body text-center p-4">
+                <div class="team-avatar mx-auto mb-4">
+                  <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Chief Meteorologist" class="rounded-circle">
+                </div>
+                <h3 class="card-title h5">Jane</h3>
+                <p class="text-primary mb-2">Chief Meteorologist</p>
+                <p class="card-text">With a Ph.D. in Atmospheric Sciences, Jane leads our weather forecasting team and ensures data accuracy.</p>
+                <div class="social-links mt-3">
+                  <a href="#" class="me-2"><i class="fab fa-twitter"></i></a>
+                  <a href="#" class="me-2"><i class="fab fa-linkedin-in"></i></a>
+                  <a href="#"><i class="far fa-envelope"></i></a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="card h-100 border-0 shadow-sm">
+              <div class="card-body text-center p-4">
+                <div class="team-avatar mx-auto mb-4">
+                  <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Lead Developer" class="rounded-circle">
+                </div>
+                <h3 class="card-title h5">Ali</h3>
+                <p class="text-primary mb-2">Lead Developer</p>
+                <p class="card-text">Ali oversees the technical architecture of WeatherNow, focusing on performance, scalability, and user experience.</p>
+                <div class="social-links mt-3">
+                  <a href="#" class="me-2"><i class="fab fa-twitter"></i></a>
+                  <a href="#" class="me-2"><i class="fab fa-linkedin-in"></i></a>
+                  <a href="#"><i class="far fa-envelope"></i></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+    <!-- Team Section -->
+
+  <!-- Contact Page -->
+  <div id="contact-page" class="page-content">
+    <section class="py-5 mt-5">
+      <div class="container px-4">
+        <div class="row justify-content-center mb-5">
+          <div class="col-lg-8 text-center" data-aos="fade-up">
+            <h1 class="mb-4">Contact Us</h1>
+            <p class="lead">Have questions, suggestions, or feedback? We'd love to hear from you! Reach out using the form below or contact us directly through our support channels.</p>
+          </div>
+        </div>
+        <div class="row g-5">
+          <div class="col-lg-6" data-aos="fade-right">
+            <!-- Contact Form -->
+            <div class="card shadow-lg border-0">
+              <div class="card-body p-4 p-md-5">
+                <h2 class="card-title h4 mb-4">Send Us a Message</h2>
+                <form id="contact-form">
+                  <div class="alert alert-success d-none" id="form-success">
+                    <i class="fas fa-check-circle me-2"></i> 
+                    Your message has been sent successfully. We'll get back to you soon!
+                  </div>
+                  <div class="alert alert-danger d-none" id="form-error">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    There was an error sending your message. Please try again.
+                  </div>
+                  <div class="mb-3">
+                    <label for="name" class="form-label">Your Name</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="subject" class="form-label">Subject</label>
+                    <select class="form-select" id="subject" name="subject" required>
+                      <option value="" selected disabled>Select a subject</option>
+                      <option value="General Inquiry">General Inquiry</option>
+                      <option value="Technical Support">Technical Support</option>
+                      <option value="Feedback">Feedback</option>
+                      <option value="Business">Business Collaboration</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div class="mb-4">
+                    <label for="message" class="form-label">Your Message</label>
+                    <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary w-100 py-2" id="submit-btn">
+                    <span id="submit-text">Send Message</span>
+                    <span id="submit-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-lg-6" data-aos="fade-left">
+            <!-- Contact Information -->
+            <div class="card shadow-lg border-0 mb-4">
+              <div class="card-body p-4">
+                <h2 class="card-title h4 mb-4">Get in Touch</h2>
+                <div class="contact-info">
+                  <div class="d-flex mb-4">
+                    <div class="contact-icon bg-primary bg-opacity-10 text-primary">
+                      <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="ms-3">
+                      <h3 class="h6 mb-1">Our Location</h3>
+                      <p class="mb-0">123 WeatherSphere Peshawar, Pakistan</p>
+                    </div>
+                  </div>
+                  <div class="d-flex mb-4">
+                    <div class="contact-icon bg-primary bg-opacity-10 text-primary">
+                      <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="ms-3">
+                      <h3 class="h6 mb-1">Email Address</h3>
+                      <p class="mb-0">info@weathernow.com</p>
+                    </div>
+                  </div>
+                  <div class="d-flex mb-4">
+                    <div class="contact-icon bg-primary bg-opacity-10 text-primary">
+                      <i class="fas fa-phone-alt"></i>
+                    </div>
+                    <div class="ms-3">
+                      <h3 class="h6 mb-1">Phone Number</h3>
+                      <p class="mb-0">+92-1234567890</p>
+                    </div>
+                  </div>
+                  <div class="d-flex">
+                    <div class="contact-icon bg-primary bg-opacity-10 text-primary">
+                      <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="ms-3">
+                      <h3 class="h6 mb-1">Support Hours</h3>
+                      <p class="mb-0">Monday - Friday: 9:00 AM - 6:00 PM </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Social Media -->
+            <div class="card shadow-lg border-0">
+              <div class="card-body p-4">
+                <h2 class="card-title h4 mb-4">Connect With Us</h2>
+                <p>Follow us on social media for updates, weather tips, and more.</p>
+                <div class="social-media-links">
+                  <a href="#" class="btn btn-outline-primary social-btn me-2 mb-2">
+                    <i class="fab fa-facebook-f"></i>
+                    <span class="ms-2">Facebook</span>
+                  </a>
+                  <a href="#" class="btn btn-outline-primary social-btn me-2 mb-2">
+                    <i class="fab fa-twitter"></i>
+                    <span class="ms-2">Twitter</span>
+                  </a>
+                  <a href="#" class="btn btn-outline-primary social-btn me-2 mb-2">
+                    <i class="fab fa-instagram"></i>
+                    <span class="ms-2">Instagram</span>
+                  </a>
+                  <a href="#" class="btn btn-outline-primary social-btn mb-2">
+                    <i class="fab fa-linkedin-in"></i>
+                    <span class="ms-2">LinkedIn</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <!-- Contact Page -->
+
+  <!-- Footer -->
+  <footer class="py-4 text-white">
+    <div class="container">
+      <div class="row gy-4">
+        <div class="col-lg-4">
+          <h5 class="mb-3">WeatherNow</h5>
+          <p class="mb-4">Providing accurate weather forecasts and information to help you plan your day with confidence.</p>
+          <div class="social-links">
+            <a href="#" class="me-2"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="me-2"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="me-2"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <h5 class="mb-3">Quick Links</h5>
+          <ul class="list-unstyled">
+            <li><a href="#" data-page="home">Home</a></li>
+            <li><a href="#" data-page="weather">Weather</a></li>
+            <li><a href="#" data-page="map">Map</a></li>
+            <li><a href="#" data-page="articles">Articles</a></li>
+            <li><a href="#" data-page="faq">FAQ</a></li>
+            <li><a href="#" data-page="about">About</a></li>
+            <li><a href="#" data-page="contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4">
+          <h5 class="mb-3">Newsletter</h5>
+          <p>Subscribe for weather alerts and updates.</p>
+          <form class="mb-3">
+            <div class="input-group">
+              <input type="email" class="form-control" placeholder="Your email">
+              <button class="btn btn-light" type="submit">Subscribe</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <hr class="my-4 border-light">
+      <div class="row">
+        <div class="col-md-6 text-center text-md-start">
+          <p class="mb-0">&copy; 2025 WeatherNow. All rights reserved.</p>
+        </div>
+        <div class="col-md-6 text-center text-md-end">
+          <a href="#" class="text-white me-3">Privacy Policy</a>
+          <a href="#" class="text-white">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <!-- Footer -->
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- AOS JS for animations -->
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  
+  <script>
+    const API_KEY = '4a8176f4d92a300ee72a3eda6ab108ff'; 
+    const API_URL = 'https://api.openweathermap.org/data/2.5/weather';
+    const WEATHER_ICON_URL = 'https://openweathermap.org/img/wn/';
+    const OPENWEATHERMAP_URL = 'https://tile.openweathermap.org/map';
+    const DEFAULT_ZOOM = 3;
+    const DEFAULT_CENTER = [20, 0]; 
+    const DEFAULT_LAYER = 'temp';
+
+    let map;
+    let currentLayer;
+    let markers = [];
+
+    // DOM Elements
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const sunIcon = themeToggleBtn?.querySelector('.fa-sun');
+    const moonIcon = themeToggleBtn?.querySelector('.fa-moon');
+    const navbarElement = document.getElementById('mainNav');
+    const searchInput = document.getElementById('search-input');
+    const searchBtn = document.querySelector('.search-btn');
+    const locationBtn = document.querySelector('.location-btn');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const errorContainer = document.getElementById('error-container');
+    const errorMessage = document.getElementById('error-message');
+    const weatherContainer = document.getElementById('weather-container');
+    const contactForm = document.getElementById('contact-form');
+    const formSuccess = document.getElementById('form-success');
+    const formError = document.getElementById('form-error');
+    const submitBtn = document.getElementById('submit-btn');
+    const submitText = document.getElementById('submit-text');
+    const submitSpinner = document.getElementById('submit-spinner');
+    const pageTransition = document.querySelector('.page-transition');
+
+    document.addEventListener('DOMContentLoaded', () => {
+      AOS.init({
+        duration: 800,
+        easing: 'ease-in-out',
+        once: true
+      });
+
+      initializeTheme();
+      
+      setupPageNavigation();
+      
+      setupEventListeners();
+      
+      if (contactForm) {
+        addFormValidation();
+      }
+    });
+
+    function initializeTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      
+      if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+        document.body.classList.add('dark-theme');
+        if (sunIcon && moonIcon) {
+          sunIcon.classList.add('d-none');
+          moonIcon.classList.remove('d-none');
+        }
+      }
+    }
+
+    function toggleTheme() {
+      if (document.body.classList.contains('dark-theme')) {
+        document.body.classList.remove('dark-theme');
+        localStorage.setItem('theme', 'light');
+        if (sunIcon && moonIcon) {
+          sunIcon.classList.remove('d-none');
+          moonIcon.classList.add('d-none');
+        }
+      } else {
+        document.body.classList.add('dark-theme');
+        localStorage.setItem('theme', 'dark');
+        if (sunIcon && moonIcon) {
+          sunIcon.classList.add('d-none');
+          moonIcon.classList.remove('d-none');
+        }
+      }
+      
+      if (typeof map !== 'undefined' && map !== null) {
+        updateMapTheme(document.body.classList.contains('dark-theme'));
+      }
+    }
+
+    function setupPageNavigation() {
+      const navLinks = document.querySelectorAll('[data-page]');
+      navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const targetPage = link.getAttribute('data-page');
+          navigateToPage(targetPage);
+        });
+      });
+    }
+
+    function navigateToPage(pageName) {
+      const pages = document.querySelectorAll('.page-content');
+      const navLinks = document.querySelectorAll('.nav-link');
+      
+      if (pageTransition) {
+        pageTransition.classList.add('animate');
+        
+        setTimeout(() => {
+          pages.forEach(page => {
+            page.classList.remove('active');
+          });
+          
+          const targetPage = document.getElementById(`${pageName}-page`);
+          if (targetPage) {
+            targetPage.classList.add('active');
+          }
+          
+          navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('data-page') === pageName) {
+              link.classList.add('active');
+            }
+          });
+          
+          if (pageName === 'map' && (!map || map === null)) {
+            setTimeout(initializeWeatherMap, 100);
+          }
+          
+          window.scrollTo(0, 0);
+          
+          AOS.refresh();
+        }, 300);
+        
+        setTimeout(() => {
+          pageTransition.classList.remove('animate');
+        }, 600);
+      } else {
+        pages.forEach(page => {
+          page.classList.remove('active');
+        });
+        
+        const targetPage = document.getElementById(`${pageName}-page`);
+        if (targetPage) {
+          targetPage.classList.add('active');
+        }
+        
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('data-page') === pageName) {
+            link.classList.add('active');
+          }
+        });
+        
+        if (pageName === 'map' && (!map || map === null)) {
+          setTimeout(initializeWeatherMap, 100);
+        }
+        
+        window.scrollTo(0, 0);
+        AOS.refresh();
+      }
+    }
+
+    // ====== Event Listeners ======
+    function setupEventListeners() {
+      themeToggleBtn?.addEventListener('click', toggleTheme);
+      
+      window.addEventListener('scroll', handleNavbarOnScroll);
+      
+      if (searchBtn) {
+        searchBtn.addEventListener('click', () => {
+          const city = searchInput.value.trim();
+          if (city) {
+            checkWeather(city);
+          } else {
+            showError('Please enter a city name');
+          }
+        });
+      }
+      
+      if (searchInput) {
+        searchInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            const city = searchInput.value.trim();
+            if (city) {
+              checkWeather(city);
+            } else {
+              showError('Please enter a city name');
+            }
+          }
+        });
+      }
+      
+      if (locationBtn) {
+        locationBtn.addEventListener('click', getCurrentLocationWeather);
+      }
+      
+      if (contactForm) {
+        contactForm.addEventListener('submit', handleFormSubmit);
+      }
+    }
+
+    function handleNavbarOnScroll() {
+      const scrollTop = window.scrollY;
+      
+      if (scrollTop > 100) {
+        navbarElement?.classList.add('navbar-shrink');
+      } else {
+        navbarElement?.classList.remove('navbar-shrink');
+      }
+    }
+
+    async function fetchData(url) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        return await response.json();
+      } catch (error) {
+        console.error('Fetch error:', error);
+        throw error;
+      }
+    }
+
+    function getWeatherIconUrl(iconCode) {
+      return `${WEATHER_ICON_URL}${iconCode}@2x.png`;
+    }
+
+    function getWeatherIconClass(weatherMain) {
+      switch (weatherMain.toLowerCase()) {
+        case 'clear':
+          return 'fa-sun';
+        case 'clouds':
+          return 'fa-cloud';
+        case 'rain':
+        case 'drizzle':
+          return 'fa-cloud-rain';
+        case 'thunderstorm':
+          return 'fa-bolt';
+        case 'snow':
+          return 'fa-snowflake';
+        case 'mist':
+        case 'fog':
+        case 'haze':
+          return 'fa-smog';
+        default:
+          return 'fa-cloud-sun';
+      }
+    }
+
+    function showLoading(element) {
+      if (element) {
+        element.classList.remove('d-none');
+      }
+    }
+
+    function hideLoading(element) {
+      if (element) {
+        element.classList.add('d-none');
+      }
+    }
+
+    // ====== Weather Page Functions ======
+    async function checkWeather(city) {
+      if (!API_KEY) {
+        showError('API key is required to fetch weather data');
+        return;
+      }
+      
+      try {
+        hideError();
+        showLoading(loadingIndicator);
+        hideWeatherData();
+        
+        const url = `${API_URL}?q=${city}&units=metric&appid=${API_KEY}`;
+        const data = await fetchData(url);
+        
+        hideLoading(loadingIndicator);
+        updateWeatherUI(data);
+        showWeatherData();
+      } catch (error) {
+        hideLoading(loadingIndicator);
+        showError(error.message === "Failed to fetch" ? 
+          "Network error. Please check your connection." : 
+          `Couldn't find weather data for "${city}"`);
+      }
+    }
+
+    function getCurrentLocationWeather() {
+      if (navigator.geolocation) {
+        showLoading(loadingIndicator);
+        hideError();
+        hideWeatherData();
+        
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            try {
+              if (!API_KEY) {
+                hideLoading(loadingIndicator);
+                showError('API key is required to fetch weather data');
+                return;
+              }
+              
+              const { latitude, longitude } = position.coords;
+              const url = `${API_URL}?lat=${latitude}&lon=${longitude}&units=metric&appid=${API_KEY}`;
+              const data = await fetchData(url);
+              
+              hideLoading(loadingIndicator);
+              updateWeatherUI(data);
+              showWeatherData();
+              
+              if (searchInput) {
+                searchInput.value = data.name;
+              }
+            } catch (error) {
+              hideLoading(loadingIndicator);
+              showError("Couldn't fetch weather data for your location");
+            }
+          },
+          (error) => {
+            hideLoading(loadingIndicator);
+            let errorMsg = "Couldn't access your location";
+            
+            switch (error.code) {
+              case error.PERMISSION_DENIED:
+                errorMsg = "Location access denied. Please enable location services.";
+                break;
+              case error.POSITION_UNAVAILABLE:
+                errorMsg = "Location information is unavailable.";
+                break;
+              case error.TIMEOUT:
+                errorMsg = "Location request timed out.";
+                break;
+            }
+            
+            showError(errorMsg);
+          }
+        );
+      } else {
+        showError("Geolocation is not supported by this browser");
+      }
+    }
+
+    function updateWeatherUI(data) {
+      document.getElementById('city-name').textContent = data.name;
+      
+      document.getElementById('temperature').textContent = `${Math.round(data.main.temp)}°C`;
+      document.getElementById('weather-description').textContent = data.weather[0].description;
+      
+      const weatherIconElement = document.getElementById('weather-icon');
+      weatherIconElement.innerHTML = `<i class="fas ${getWeatherIconClass(data.weather[0].main)} fa-4x text-primary"></i>`;
+      
+      document.getElementById('humidity').textContent = `${data.main.humidity}%`;
+      document.getElementById('wind-speed').textContent = `${data.wind.speed} m/s`;
+      document.getElementById('pressure').textContent = `${data.main.pressure} hPa`;
+      document.getElementById('feels-like').textContent = `${Math.round(data.main.feels_like)}°C`;
+    }
+
+    function showError(message) {
+      if (errorContainer && errorMessage) {
+        errorMessage.textContent = message;
+        errorContainer.classList.remove('d-none');
+      }
+    }
+
+    function hideError() {
+      if (errorContainer) {
+        errorContainer.classList.add('d-none');
+      }
+    }
+
+    function showWeatherData() {
+      if (weatherContainer) {
+        weatherContainer.classList.remove('d-none');
+      }
+    }
+
+    function hideWeatherData() {
+      if (weatherContainer) {
+        weatherContainer.classList.add('d-none');
+      }
+    }
+
+    // ====== Map Page Functions ======
+    function initializeWeatherMap() {
+      map = L.map('weather-map').setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+      
+      const isDarkTheme = document.body.classList.contains('dark-theme');
+      
+      const lightMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      });
+      
+      const darkMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+      });
+      
+      if (isDarkTheme) {
+        darkMap.addTo(map);
+      } else {
+        lightMap.addTo(map);
+      }
+      
+      addWeatherLayer(DEFAULT_LAYER);
+      
+      setupLayerToggleButtons();
+      
+      setupMapSearch();
+    }
+
+    function addWeatherLayer(layerType) {
+      if (currentLayer) {
+        map.removeLayer(currentLayer);
+      }
+      
+      if (!API_KEY) {
+        console.warn('API_KEY is not set. Unable to add weather layer.');
+        return;
+      }
+      
+      let layerUrl;
+      switch (layerType) {
+        case 'temp':
+          layerUrl = `${OPENWEATHERMAP_URL}/temp_new/{z}/{x}/{y}.png?appid=${API_KEY}`;
+          break;
+        case 'clouds':
+          layerUrl = `${OPENWEATHERMAP_URL}/clouds_new/{z}/{x}/{y}.png?appid=${API_KEY}`;
+          break;
+        case 'precipitation':
+          layerUrl = `${OPENWEATHERMAP_URL}/precipitation_new/{z}/{x}/{y}.png?appid=${API_KEY}`;
+          break;
+        case 'wind':
+          layerUrl = `${OPENWEATHERMAP_URL}/wind_new/{z}/{x}/{y}.png?appid=${API_KEY}`;
+          break;
+        default:
+          layerUrl = `${OPENWEATHERMAP_URL}/temp_new/{z}/{x}/{y}.png?appid=${API_KEY}`;
+      }
+      
+      currentLayer = L.tileLayer(layerUrl, {
+        attribution: '&copy; <a href="https://openweathermap.org">OpenWeatherMap</a>',
+        maxZoom: 19,
+        opacity: 0.6
+      }).addTo(map);
+    }
+
+    function updateMapTheme(isDarkTheme) {
+      map.eachLayer(layer => {
+        if (layer instanceof L.TileLayer) {
+          map.removeLayer(layer);
+        }
+      });
+      
+      if (isDarkTheme) {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        }).addTo(map);
+      } else {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+      }
+      
+      if (currentLayer) {
+        map.addLayer(currentLayer);
+      }
+    }
+
+    function setupLayerToggleButtons() {
+      const layerButtons = document.querySelectorAll('[data-layer]');
+      
+      layerButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const layerType = button.getAttribute('data-layer');
+          
+          setActiveLayerButton(button);
+          
+          addWeatherLayer(layerType);
+        });
+      });
+    }
+
+    function setActiveLayerButton(button) {
+      const layerButtons = document.querySelectorAll('[data-layer]');
+      
+      layerButtons.forEach(btn => {
+        btn.classList.remove('active');
+        btn.classList.add('btn-outline-primary');
+        btn.classList.remove('btn-primary');
+      });
+      
+      button.classList.add('active');
+      button.classList.remove('btn-outline-primary');
+      button.classList.add('btn-primary');
+    }
+
+    function setupMapSearch() {
+      const searchInput = document.getElementById('map-search');
+      const searchButton = document.getElementById('search-button');
+      
+      if (searchButton && searchInput) {
+        searchButton.addEventListener('click', () => {
+          const query = searchInput.value.trim();
+          if (query) {
+            searchLocation(query);
+          }
+        });
+        
+        searchInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            const query = searchInput.value.trim();
+            if (query) {
+              searchLocation(query);
+            }
+          }
+        });
+      }
+    }
+
+    async function searchLocation(query) {
+      try {
+        if (!API_KEY) {
+          alert('API key is required to search locations');
+          return;
+        }
+        
+        const url = `${API_URL}?q=${query}&units=metric&appid=${API_KEY}`;
+        const data = await fetchData(url);
+        
+        clearMarkers();
+        
+        addMarker(data);
+        
+        map.setView([data.coord.lat, data.coord.lon], 8);
+      } catch (error) {
+        alert(`Couldn't find location "${query}"`);
+      }
+    }
+
+    function addMarker(data) {
+      const marker = L.marker([data.coord.lat, data.coord.lon]).addTo(map);
+      
+      const popupContent = `
+        <div class="map-popup">
+          <h5>${data.name}</h5>
+          <div class="d-flex align-items-center">
+            <img src="${getWeatherIconUrl(data.weather[0].icon)}" alt="${data.weather[0].description}" width="50">
+            <div class="ms-2">
+              <div class="h4 mb-0">${Math.round(data.main.temp)}°C</div>
+              <div>${data.weather[0].description}</div>
+            </div>
+          </div>
+          <div class="mt-2">
+            <div><strong>Humidity:</strong> ${data.main.humidity}%</div>
+            <div><strong>Wind:</strong> ${data.wind.speed} m/s</div>
+          </div>
+        </div>
+      `;
+      
+      marker.bindPopup(popupContent).openPopup();
+      markers.push(marker);
+    }
+
+    function clearMarkers() {
+      markers.forEach(marker => {
+        map.removeLayer(marker);
+      });
+      markers = [];
+    }
+
+    // ====== Contact Page Functions ======
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      
+      if (submitText && submitSpinner) {
+        submitText.textContent = 'Sending...';
+        submitSpinner.classList.remove('d-none');
+        submitBtn.disabled = true;
+      }
+      
+      hideFormAlerts();
+      
+      setTimeout(() => {
+        showFormSuccess();
+        contactForm.reset();
+        
+        if (submitText && submitSpinner) {
+          submitText.textContent = 'Send Message';
+          submitSpinner.classList.add('d-none');
+          submitBtn.disabled = false;
+        }
+      }, 1500);
+    }
+
+    function addFormValidation() {
+      const nameInput = document.getElementById('name');
+      const emailInput = document.getElementById('email');
+      const subjectSelect = document.getElementById('subject');
+      const messageTextarea = document.getElementById('message');
+      
+      if (nameInput) {
+        nameInput.addEventListener('blur', () => {
+          if (nameInput.value.trim() === '') {
+            nameInput.classList.add('is-invalid');
+          } else {
+            nameInput.classList.remove('is-invalid');
+            nameInput.classList.add('is-valid');
+          }
+        });
+      }
+      
+      if (emailInput) {
+        emailInput.addEventListener('blur', () => {
+          const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value);
+          
+          if (emailInput.value.trim() === '' || !isValidEmail) {
+            emailInput.classList.add('is-invalid');
+          } else {
+            emailInput.classList.remove('is-invalid');
+            emailInput.classList.add('is-valid');
+          }
+        });
+      }
+      
+      if (subjectSelect) {
+        subjectSelect.addEventListener('change', () => {
+          if (subjectSelect.value === '') {
+            subjectSelect.classList.add('is-invalid');
+          } else {
+            subjectSelect.classList.remove('is-invalid');
+            subjectSelect.classList.add('is-valid');
+          }
+        });
+      }
+      
+      if (messageTextarea) {
+        messageTextarea.addEventListener('blur', () => {
+          if (messageTextarea.value.trim() === '') {
+            messageTextarea.classList.add('is-invalid');
+          } else {
+            messageTextarea.classList.remove('is-invalid');
+            messageTextarea.classList.add('is-valid');
+          }
+        });
+      }
+    }
+
+    function showFormSuccess() {
+      if (formSuccess) {
+        formSuccess.classList.remove('d-none');
+        
+        formSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        setTimeout(() => {
+          formSuccess.classList.add('d-none');
+        }, 5000);
+      }
+    }
+
+    function hideFormAlerts() {
+      if (formSuccess) {
+        formSuccess.classList.add('d-none');
+      }
+      
+      if (formError) {
+        formError.classList.add('d-none');
+      }
+    }
+  </script>
+</body>
+</html>
